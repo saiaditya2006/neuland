@@ -7,41 +7,45 @@ from openpyxl import Workbook
 from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl.utils import get_column_letter
 
-st.title("Standardizing Company Name")
+st.title("🧹 Company Name Cleaner with Fuzzy Matching")
 
 # Upload Excel file
 uploaded_file = st.file_uploader("📂 Upload your Excel file (.xlsx)", type=["xlsx"])
-# threshold = st.slider("🎯 Fuzzy Matching Threshold", 60, 100, 80)
+threshold = 80
 
 # Replacement dictionary input
-user_input = st.text_area("✍️ Enter replacements as JSON (e.g., {'pfizer': 'Pfizer Inc'})")
+user_input = st.text_area("✍️ Enter replacements as JSON (e.g., {\"pfizer\": \"Pfizer Inc\"})")
 
-# Safely parse user input
+# Parse user input
+replacements = {}
 if user_input:
     try:
         replacements = json.loads(user_input)
     except json.JSONDecodeError:
-        st.error("❌ Invalid JSON input. Please enter a valid JSON dictionary.")
-        replacements = {}
-else:
-    replacements = {}
+        st.error("❌ Invalid JSON input. Please enter a valid JSON dictionary like: {\"pfizer\": \"Pfizer Inc\"}")
 
-# Process only if file is uploaded
-# Add a button to trigger cleaning
+# Show data preview if file is uploaded
+df = None
 if uploaded_file:
-    df = pd.read_excel(uploaded_file)
-    st.write("📊 First few rows of the uploaded file:")
-    st.dataframe(df.head())
+    try:
+        df = pd.read_excel(uploaded_file)
+        st.write("📊 First few rows of the uploaded file:")
+        st.dataframe(df.head())
+    except Exception as e:
+        st.error(f"❌ Error reading Excel file: {e}")
+        df = None
 
-    if 'HOLDER' not in df.columns:
-        st.error("❌ The uploaded file does not contain a column named 'HOLDER'. Please check the column names.")
-        st.stop()
-
-    # Button to trigger processing
-    if st.button("🚀 Run Cleaning"):
-        if not replacements:
-            st.warning("⚠️ Please provide a valid replacement dictionary in JSON format.")
+# Show run button always if file and replacements input exist
+if st.button("🚀 Run Cleaning"):
+    if not uploaded_file:
+        st.warning("⚠️ Please upload an Excel file first.")
+    elif not replacements:
+        st.warning("⚠️ Please provide a valid replacement dictionary in JSON format.")
+    elif df is not None:
+        if 'HOLDER' not in df.columns:
+            st.error("❌ The uploaded file does not contain a column named 'HOLDER'.")
         else:
+            # Begin processing
             df['HOLDER'] = df['HOLDER'].astype(str)
             df['HOLDER_clean'] = df['HOLDER'].str.lower().str.strip()
             df['HOLDER_CLEANED'] = df['HOLDER']  # Copy original
@@ -85,4 +89,3 @@ if uploaded_file:
 
             st.success("✅ Cleaning complete.")
             st.download_button("📥 Download Cleaned Excel", output.getvalue(), file_name="cleaned_data.xlsx")
-
