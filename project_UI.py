@@ -7,11 +7,11 @@ from openpyxl import Workbook
 from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl.utils import get_column_letter
 
-st.title("🧹 Company Name Cleaner with Fuzzy Matching")
+st.title("Standardizing Company Name")
 
 # Upload Excel file
 uploaded_file = st.file_uploader("📂 Upload your Excel file (.xlsx)", type=["xlsx"])
-threshold = st.slider("🎯 Fuzzy Matching Threshold", 60, 100, 80)
+# threshold = st.slider("🎯 Fuzzy Matching Threshold", 60, 100, 80)
 
 # Replacement dictionary input
 user_input = st.text_area("✍️ Enter replacements as JSON (e.g., {'pfizer': 'Pfizer Inc'})")
